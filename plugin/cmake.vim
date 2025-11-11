@@ -1,27 +1,40 @@
 
+" Functions
 function CMakeClean()
 	echom "cmake clean"
 endfunction
 
 function CMakeListPresets()
-	echom "cmake --list-presets"
+	let output = system('cmake --list-presets')
+	echo output
 endfunction
 
 function CMakePreset(...)
-	echom "cmake --preset " .. string(a:1)
+	let output = system('cmake --preset default')
+	echo output
 endfunction
 
 function CMakeBuildPreset(...)
-	echom "cmake --build --preset " .. string(a:1)
+	let output = system('cmake --build --preset default')
+	echo output
 endfunction
 
 function CMakeTestPreset(...)
-	echom "ctest --preset " .. string(a:1)
+	let output = system('ctest --preset default')
+	echo output
 endfunction
 
-command! -nargs=0 CMakeClean call CMakeClean()
-command! -nargs=0 CMakeListPresets call CMakeListPresets()
-command! -nargs=1 CMakePresets call CMakePreset(<f-args>)
-command! -nargs=1 CMakeBuildPreset call CMakeBuildPreset(<f-args>)
-command! -nargs=1 CMakeTestPreset call CMakeTestPreset(<f-args>)
+" Commands
+command -nargs=0 CMakeClean call CMakeClean()
+command -nargs=0 CMakeListPresets call CMakeListPresets()
+command -nargs=? CMakePreset call CMakePreset(<f-args>)
+command -nargs=? CMakeBuildPreset call CMakeBuildPreset(<f-args>)
+command -nargs=? CMakeTestPreset call CMakeTestPreset(<f-args>)
+
+" Mappings
+nnoremap <silent> <Plug>(CMakeClean) :call CMakeClean()<CR>
+nnoremap <silent> <Plug>(CMakeListPresets) :call CMakeListPresets()<CR>
+nnoremap <silent> <Plug>(CMakePreset) :call CMakePreset(default)<CR>
+nnoremap <silent> <Plug>(CMakeBuildPreset) :call CMakeBuildPreset(default)<CR>
+nnoremap <silent> <Plug>(CMakeTestPreset) :call CMakeTestPreset(default)<CR>
 
