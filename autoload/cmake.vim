@@ -7,6 +7,18 @@
 " TODO: Is using system better than opening a terminal (if tmux is available?)
 " TODO: Make a callback when done building, so that we can restart lsp
 " perhaps with nvim we can do it internally ..
+" TODO: Add preset cached variable to a dictionary
+" Will be useful to know output path for bin and lib
+" However we need to know what target name and type we are dealing with
+" Steps to find binary output path
+" First see if CMAKE_RUNTIME_OUTPUT_DIRECTORY is set
+" Otherwise parse CMakePresets.json binaryDir in the preset configure
+" Otherwise assume binaryDir is build/
+" TODO: We need a run command or at least give the binary path
+" And also make a callback to attach a debugger or something.
+" EX: function! run_executable_preset & run_googletest_preset
+" NOTE: test_preset is running ctests and googletests however you can run
+" googletests build to output results properly..
 
 " Credits: https://github.com/mattn/vim-findroot/blob/master/autoload/findroot.vim
 function! s:find_project_up(path, patterns) abort
@@ -46,6 +58,22 @@ function! cmake#list_presets() abort
 	silent! cclose
 
 	let output = system(command)
+	echo output
+endfunction
+
+function! cmake#list_preset_variables(preset, ...) abort
+	" NOTE: Use -LA for advanced cached variables
+	let l:command = 'cmake -L --preset ' .. a:preset
+	silent! cclose
+
+	let l:cwd = get(a:, 1, getcwd())
+	let l:patterns = ['CMakePresets.json']
+	let l:pwd = s:find_project_up(l:cwd, l:patterns)
+	if l:pwd != l:cwd
+		let l:command = 'cd ' . l:pwd . ' && ' . l:command . ' && cd ' . l:cwd
+	endif
+	let l:output = system(l:command)
+	let l:result = v:shell_error
 	echo output
 endfunction
 
