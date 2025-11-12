@@ -19,6 +19,7 @@
 " EX: function! run_executable_preset & run_googletest_preset
 " NOTE: test_preset is running ctests and googletests however you can run
 " googletests build to output results properly..
+" TODO: Add package preset support ..
 
 " Credits: https://github.com/mattn/vim-findroot/blob/master/autoload/findroot.vim
 function! s:find_project_up(path, patterns) abort
@@ -54,11 +55,18 @@ function! cmake#clean() abort
 endfunction
 
 function! cmake#list_presets() abort
-	let command = 'cmake --list-presets'
+	let l:command = 'cmake --list-presets'
 	silent! cclose
 
-	let output = system(command)
-	echo output
+	let l:cwd = get(a:, 1, getcwd())
+	let l:patterns = ['CMakePresets.json']
+	let l:pwd = s:find_project_up(l:cwd, l:patterns)
+	if l:pwd != l:cwd
+		let l:command = 'cd ' . l:pwd . ' && ' . l:command . ' && cd ' . l:cwd
+	endif
+	let l:output = system(l:command)
+	let l:result = v:shell_error
+	echo l:output
 endfunction
 
 function! cmake#list_preset_variables(preset, ...) abort
@@ -74,7 +82,7 @@ function! cmake#list_preset_variables(preset, ...) abort
 	endif
 	let l:output = system(l:command)
 	let l:result = v:shell_error
-	echo output
+	echo l:output
 endfunction
 
 function! cmake#preset(preset, ...) abort
@@ -107,7 +115,40 @@ function! cmake#preset(preset, ...) abort
 	" exec 'terminal ' . l:command
 	let l:output = system(l:command)
 	let l:result = v:shell_error
-	echo output
+	echo l:output
+endfunction
+
+function! cmake#fresh_preset(preset, ...) abort
+	let l:command = 'cmake --fresh --preset ' .. a:preset
+	silent! cclose
+
+	" let output = system(command)
+	" let result = v:shell_error
+	" if result == 0
+	" 	echo "success"
+	" else
+	" 	echo "failed"
+	" endif
+	" echo output
+
+	" Testing
+	" NOTE: There are several ways to launch a command
+	" exec 'terminal ' . command
+	let l:cwd = get(a:, 1, getcwd())
+	" echo string(cwd)
+	" echon !empty(findfile('CMakePresets.json', l:cwd.';'))
+	" echon findfile('CMakePresets.json', l:cwd.';')
+	" echo findfile('CMakePresets.json', '.;')
+	let l:patterns = ['CMakePresets.json']
+	let l:pwd = s:find_project_up(l:cwd, l:patterns)
+	if l:pwd != l:cwd
+		let l:command = 'cd ' . l:pwd . ' && ' . l:command . ' && cd ' . l:cwd
+		" echo "test " .. l:command
+	endif
+	" exec 'terminal ' . l:command
+	let l:output = system(l:command)
+	let l:result = v:shell_error
+	echo l:output
 endfunction
 
 function! cmake#build_preset(preset, ...) abort
@@ -131,33 +172,7 @@ function! cmake#build_preset(preset, ...) abort
 	" exec 'terminal ' . l:command
 	let l:output = system(l:command)
 	let l:result = v:shell_error
-	echo output
-endfunction
-
-function! cmake#rebuild_preset(preset, ...) abort
-	let l:fresh_preset_command = 'cmake --fresh --preset ' .. a:preset
-	let l:build_preset_command = 'cmake --build --preset ' .. a:preset
-	let l:command = l:fresh_preset_command . ' && ' . l:build_preset_command
-	silent! cclose
-
-	" Testing
-	" NOTE: There are several ways to launch a command
-	" exec 'terminal ' . command
-	let l:cwd = get(a:, 1, getcwd())
-	" echo string(cwd)
-	" echon !empty(findfile('CMakePresets.json', l:cwd.';'))
-	" echon findfile('CMakePresets.json', l:cwd.';')
-	" echo findfile('CMakePresets.json', '.;')
-	let l:patterns = ['CMakePresets.json']
-	let l:pwd = s:find_project_up(l:cwd, l:patterns)
-	if l:pwd != l:cwd
-		let l:command = 'cd ' . l:pwd . ' && ' . l:command . ' && cd ' . l:cwd
-		" echo "test " .. l:command
-	endif
-	" exec 'terminal ' . l:command
-	let l:output = system(l:command)
-	let l:result = v:shell_error
-	echo output
+	echo l:output
 endfunction
 
 function! cmake#test_preset(preset, ...) abort
@@ -181,6 +196,104 @@ function! cmake#test_preset(preset, ...) abort
 	" exec 'terminal ' . l:command
 	let l:output = system(l:command)
 	let l:result = v:shell_error
-	echo output
+	echo l:output
+endfunction
+
+function! cmake#workflow_list_presets() abort
+	let l:command = 'cmake --workflow --list-presets'
+	silent! cclose
+
+	let l:cwd = get(a:, 1, getcwd())
+	let l:patterns = ['CMakePresets.json']
+	let l:pwd = s:find_project_up(l:cwd, l:patterns)
+	if l:pwd != l:cwd
+		let l:command = 'cd ' . l:pwd . ' && ' . l:command . ' && cd ' . l:cwd
+	endif
+	let l:output = system(l:command)
+	let l:result = v:shell_error
+	echo l:output
+endfunction
+
+function! cmake#workflow_list_preset_variables(preset, ...) abort
+	" NOTE: Use -LA for advanced cached variables
+	" TODO: Verify if it inherits cached variables from all stages
+	let l:command = 'cmake -L --workflow --preset ' .. a:preset
+	silent! cclose
+
+	let l:cwd = get(a:, 1, getcwd())
+	let l:patterns = ['CMakePresets.json']
+	let l:pwd = s:find_project_up(l:cwd, l:patterns)
+	if l:pwd != l:cwd
+		let l:command = 'cd ' . l:pwd . ' && ' . l:command . ' && cd ' . l:cwd
+	endif
+	let l:output = system(l:command)
+	let l:result = v:shell_error
+	echo l:output
+endfunction
+
+function! cmake#workflow_preset(preset, ...) abort
+	let l:command = 'cmake --workflow --preset ' .. a:preset
+	silent! cclose
+
+	" let output = system(command)
+	" let result = v:shell_error
+	" if result == 0
+	" 	echo "success"
+	" else
+	" 	echo "failed"
+	" endif
+	" echo output
+
+	" Testing
+	" NOTE: There are several ways to launch a command
+	" exec 'terminal ' . command
+	let l:cwd = get(a:, 1, getcwd())
+	" echo string(cwd)
+	" echon !empty(findfile('CMakePresets.json', l:cwd.';'))
+	" echon findfile('CMakePresets.json', l:cwd.';')
+	" echo findfile('CMakePresets.json', '.;')
+	let l:patterns = ['CMakePresets.json']
+	let l:pwd = s:find_project_up(l:cwd, l:patterns)
+	if l:pwd != l:cwd
+		let l:command = 'cd ' . l:pwd . ' && ' . l:command . ' && cd ' . l:cwd
+		" echo "test " .. l:command
+	endif
+	" exec 'terminal ' . l:command
+	let l:output = system(l:command)
+	let l:result = v:shell_error
+	echo l:output
+endfunction
+
+function! cmake#workflow_fresh_preset(preset, ...) abort
+	let l:command = 'cmake --workflow --fresh --preset ' .. a:preset
+	silent! cclose
+
+	" let output = system(command)
+	" let result = v:shell_error
+	" if result == 0
+	" 	echo "success"
+	" else
+	" 	echo "failed"
+	" endif
+	" echo output
+
+	" Testing
+	" NOTE: There are several ways to launch a command
+	" exec 'terminal ' . command
+	let l:cwd = get(a:, 1, getcwd())
+	" echo string(cwd)
+	" echon !empty(findfile('CMakePresets.json', l:cwd.';'))
+	" echon findfile('CMakePresets.json', l:cwd.';')
+	" echo findfile('CMakePresets.json', '.;')
+	let l:patterns = ['CMakePresets.json']
+	let l:pwd = s:find_project_up(l:cwd, l:patterns)
+	if l:pwd != l:cwd
+		let l:command = 'cd ' . l:pwd . ' && ' . l:command . ' && cd ' . l:cwd
+		" echo "test " .. l:command
+	endif
+	" exec 'terminal ' . l:command
+	let l:output = system(l:command)
+	let l:result = v:shell_error
+	echo l:output
 endfunction
 
