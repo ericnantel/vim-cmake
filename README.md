@@ -7,7 +7,7 @@ I have not found another plugin that supported the 'New' way of creating cmake p
 So I make this. I am hoping you will find this useful in your workflow for building apps and frameworks with cmake.
 One important aspect I wanted to focus on, was to be as less intruisive as possible, and that we can integrate it fast.
 
-## Prequisites
+## Prerequisites
 
 * cmake installed
 * Projects must include both CMakePresets.json and CMakeFiles.txt files
