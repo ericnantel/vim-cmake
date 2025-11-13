@@ -19,8 +19,13 @@ if !executable('bear')
 	"finish
 endif
 
+" Window Commands
+command! -nargs=0 CMakeCloseCommandLogWindow call cmake#close_command_log_window()
+
+" Path Commands (project, binary, library)
+" TODO: ..
+
 " Commands
-command! -nargs=0 CMakeClean call cmake#clean()
 command! -nargs=0 CMakeListPresets call cmake#list_presets()
 command! -nargs=+ CMakeListPresetVariables call cmake#list_preset_variables(<f-args>)
 command! -nargs=+ CMakePreset call cmake#preset(<f-args>)
@@ -33,15 +38,17 @@ command! -nargs=+ CMakeTestPreset call cmake#test_preset(<f-args>)
 
 " Workflow Commands
 command! -nargs=0 CMakeWorkflowListPresets call cmake#workflow_list_presets()
-" command! -nargs=+ CMakeWorkflowListPresetVariables call cmake#workflow_list_preset_variables(<f-args>)
 command! -nargs=+ CMakeWorkflowPreset call cmake#workflow_preset(<f-args>)
 command! -nargs=+ CMakeWorkflowFreshPreset call cmake#workflow_fresh_preset(<f-args>)
 
+" Window Mappings
+nnoremap <silent> <Plug>(CMakeCloseCommandLogWindow) :call cmake#close_command_log_window()<CR>
+
 " Mappings
-nnoremap <silent> <Plug>(CMakeClean) :call cmake#clean()<CR>
 nnoremap <silent> <Plug>(CMakeListPresets) :call cmake#list_presets()<CR>
 nnoremap <silent> <Plug>(CMakeListPresetVariables) :call cmake#list_preset_variables(default)<CR>
 nnoremap <silent> <Plug>(CMakePreset) :call cmake#preset(default)<CR>
+nnoremap <silent> <Plug>(CMakeFreshPreset) :call cmake#fresh_preset(default)<CR>
 nnoremap <silent> <Plug>(CMakeBuildPreset) :call cmake#build_preset(default)<CR>
 nnoremap <silent> <Plug>(CMakeTestPreset) :call cmake#test_preset(default)<CR>
 
@@ -50,7 +57,6 @@ nnoremap <silent> <Plug>(CMakeTestPreset) :call cmake#test_preset(default)<CR>
 
 " Workflow Mappings
 nnoremap <silent> <Plug>(CMakeWorkflowListPresets) :call cmake#workflow_list_presets()<CR>
-" nnoremap <silent> <Plug>(CMakeWorkflowListPresetVariables) : call cmake#list_preset_variables(default)<CR>
 nnoremap <silent> <Plug>(CMakeWorkflowPreset) : call cmake#workflow_preset(default)<CR>
 nnoremap <silent> <Plug>(CMakeWorkflowFreshPreset) : call cmake#workflow_fresh_preset(default)<CR>
 
