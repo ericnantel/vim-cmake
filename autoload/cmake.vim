@@ -200,11 +200,24 @@ function! s:run_job_command(command) abort
 	" Start a job when none is running
 	if s:cmake_command_job_id == "null"
 		call s:run_command_enter()
-		let s:cmake_command_job_id = job_start(a:command, {
+
+		let l:job_options = {
 					\'out_cb': function('s:on_job_stdout'),
 					\'err_cb': function('s:on_job_stderr'),
 					\'exit_cb': function('s:on_job_exit')
-					\})
+					\}
+		if has('nvim')
+			let s:cmake_command_job_id = jobstart(a:command, l:job_options)
+			" TODO: Make sure job_id is valid (not 0 or 1)
+		else
+			let s:cmake_command_job_id = job_start(a:command, l:job_options)
+			" TODO: Make sure job_id is valid
+		endif
+		" let s:cmake_command_job_id = job_start(a:command, {
+		" 			\'out_cb': function('s:on_job_stdout'),
+		" 			\'err_cb': function('s:on_job_stderr'),
+		" 			\'exit_cb': function('s:on_job_exit')
+		" 			\})
 		" DEBUG: echomsg 'job id ' . s:cmake_command_job_id
 		" call s:run_command_exit is called on_job_exit
 	else
