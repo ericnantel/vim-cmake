@@ -1,7 +1,6 @@
 
 " TODO: Add bear support, use a global variable
 " TODO: Add window height, use a global variable
-" TODO: Use vim-dispatch if available because system() is blocking vim
 " TODO: Find Cmake projects, perhaps list available projects
 " TODO: Add set project, target, preset
 " TODO: Add error paths to quickfix list

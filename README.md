@@ -48,7 +48,6 @@ require("lazy").setup({
 
 ## Known issues
 
-* Blocking commands (system)
 
 ## Commands and Global Variables
 Please read the documentation (coming soon) for an exaustive list of available commands and global variables.
