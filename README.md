@@ -1,6 +1,8 @@
 # Vim/Neovim Plugin for Presets/Workflow CMake Projects
 *Written by Eric Nantel*
 
+![vim-cmake-gif](screenshots/vim-cmake.gif "")
+
 ## From the author
 I wrote this plugin (first one) using Vimscript so that I could run cmake commands within Vim/Neovim ecosystem.
 I have not found another plugin that supported the 'New' way of creating cmake projects with presets and workflows.
