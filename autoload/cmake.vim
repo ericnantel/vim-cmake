@@ -23,6 +23,7 @@
 
 let s:cmake_command_log_window_name = "CMakeCommandLogWindow"
 let s:cmake_previous_window_number = -1
+let s:cmake_command_job_id = "null"
 
 function! s:goto_previous_window() abort
 	" Switch to previous window if set
@@ -107,6 +108,24 @@ function! s:find_project_dir(path) abort
 	return l:project_dir
 endfunction
 
+function! s:on_job_stdout(channel, msg) abort
+
+	call s:run_command_append(a:msg)
+
+endfunction
+
+function! s:on_job_stderr(channel, msg) abort
+
+	call s:run_command_append('ERROR - ' . a:msg)
+
+endfunction
+
+function! s:on_job_exit(job, status) abort
+
+	call s:run_command_exit(a:status)
+
+endfunction
+
 function! s:prepare_command(cwd, project_dir, command) abort
 	let l:command = ''
 	if a:project_dir != a:cwd
@@ -117,7 +136,8 @@ function! s:prepare_command(cwd, project_dir, command) abort
 	return l:command
 endfunction
 
-function! s:run_command(command) abort
+function! s:run_command_enter() abort
+
 	" Close quickfix list
 	silent! cclose
 	
@@ -128,26 +148,96 @@ function! s:run_command(command) abort
 	setlocal bufhidden=delete
 	setlocal noswapfile
 	setlocal norelativenumber
+	setlocal autoread
 	setlocal modifiable
 
-	normal!ggdG
-	let l:output = systemlist(a:command)
-	call append(line('$'), l:output)
-	normal! G$o
+	normal! gg"9dG
 
-	setlocal nomodifiable
+endfunction
+
+function! s:run_command_append(msg) abort
+
+	if bufname('%') == s:cmake_command_log_window_name
+		call append(line('$'), a:msg)
+		normal! G
+	else
+		let l:command_log_window_number = bufwinnr(s:cmake_command_log_window_name)
+		if l:command_log_window_number > -1
+			call appendbufline(l:command_log_window_number, '$', a:msg)
+			" NOTE: This is optional..but this is how I refresh the buffer
+			if s:cmake_previous_window_number > -1
+				exec l:command_log_window_number . 'wincmd w'
+				normal! G
+				exec s:cmake_previous_window_number . 'wincmd w'
+			endif
+		endif
+	endif
+
+endfunction
+
+function! s:run_command_exit(status) abort
+
+	let s:cmake_command_job_id = "null"
+
+	if bufname('%') == s:cmake_command_log_window_name
+		setlocal nomodifiable
+	endif
 
 	call s:goto_previous_window()
 
 	" Print result message
+	" TODO: Add command_name to the message
 	let l:timestamp = strftime("%H:%M:%S")
-
-	let l:result = v:shell_error
-	if l:result == 0
-		echomsg l:timestamp . " - Command CMakePreset Succeed."
+	if a:status == 0
+		echomsg l:timestamp . ' - Command Succeed.'
 	else
-		echomsg l:timestamp . " - Command CMakePreset Failed."
+		echomsg l:timestamp . ' - Command Failed.'
 	endif
+
+endfunction
+
+function! s:run_job_command(command) abort
+
+	" Start a job when none is running
+	if s:cmake_command_job_id == "null"
+		call s:run_command_enter()
+		let s:cmake_command_job_id = job_start(a:command, {
+					\'out_cb': function('s:on_job_stdout'),
+					\'err_cb': function('s:on_job_stderr'),
+					\'exit_cb': function('s:on_job_exit')
+					\})
+		" DEBUG: echomsg 'job id ' . s:cmake_command_job_id
+		" call s:run_command_exit is called on_job_exit
+	else
+		echomsg "Already running job."
+	endif
+
+endfunction
+
+function! s:run_system_command(command) abort
+
+	call s:run_command_enter()
+
+	let l:output = systemlist(a:command)
+	call s:run_command_append(l:output)
+
+	let status = v:shell_error
+	call s:run_command_exit(status)
+
+endfunction
+
+function! s:run_command(command) abort
+	
+	" TODO: Make sure user cannot change this once the command is running
+	" If it becomes a global variable, otherwise we may ran into issues
+	let l:run_job = 1
+
+	if l:run_job == 1
+		call s:run_job_command(a:command)
+	else
+		call s:run_system_command(a:command)
+	endif
+
 endfunction
 
 function! cmake#close_command_log_window() abort
