@@ -23,6 +23,7 @@
 let s:cmake_command_log_window_name = "CMakeCommandLogWindow"
 let s:cmake_previous_window_number = -1
 let s:cmake_command_job_id = "null"
+let s:cmake_command_nvim_job_id = -1
 
 function! s:goto_previous_window() abort
 	" Switch to previous window if set
@@ -125,6 +126,28 @@ function! s:on_job_exit(job, status) abort
 
 endfunction
 
+function! s:on_nvim_job_stdout(job_id, data, event) abort
+
+	for line in filter(a:data, '!empty(v:val)')
+		call s:run_command_append(trim(line, '\r\n'))
+	endfor
+
+endfunction
+
+function! s:on_nvim_job_stderr(job_id, data, event) abort
+
+	for line in filter(a:data, '!empty(v:val)')
+		call s:run_command_append('ERROR - ' . trim(line, '\r\n'))
+	endfor
+
+endfunction
+
+function! s:on_nvim_job_exit(job_id, data, event) abort
+
+	call s:run_command_exit(a:data)
+
+endfunction
+
 function! s:prepare_command(cwd, project_dir, command) abort
 	let l:command = ''
 	if a:project_dir != a:cwd
@@ -176,7 +199,11 @@ endfunction
 
 function! s:run_command_exit(status) abort
 
-	let s:cmake_command_job_id = "null"
+	if has('nvim')
+		let s:cmake_command_nvim_job_id = -1
+	else
+		let s:cmake_command_job_id = "null"
+	endif
 
 	if bufname('%') == s:cmake_command_log_window_name
 		setlocal nomodifiable
@@ -198,17 +225,43 @@ endfunction
 function! s:run_job_command(command) abort
 
 	" Start a job when none is running
-	if s:cmake_command_job_id == "null"
+	let l:job_running = 0
+	if has('nvim')
+		let l:job_running = s:cmake_command_nvim_job_id > 0 ? 1 : 0
+	else
+		let l:job_running = s:cmake_command_job_id != "null" ? 1: 0
+	endif
+	if l:job_running == 0
 		call s:run_command_enter()
-		let s:cmake_command_job_id = job_start(a:command, {
-					\'out_cb': function('s:on_job_stdout'),
-					\'err_cb': function('s:on_job_stderr'),
-					\'exit_cb': function('s:on_job_exit')
-					\})
-		" DEBUG: echomsg 'job id ' . s:cmake_command_job_id
+
+		if has('nvim')
+			let l:job_options = {
+						\'on_stdout': function('s:on_nvim_job_stdout'),
+						\'on_stderr': function('s:on_nvim_job_stderr'),
+						\'on_exit': function('s:on_nvim_job_exit')
+						\}
+			let s:cmake_command_nvim_job_id = jobstart(a:command, l:job_options)
+			if s:cmake_command_nvim_job_id == 0 || s:cmake_command_nvim_job_id == -1
+				let s:cmake_command_nvim_job_id = -1
+				echomsg "Cannot create job. Please report to maintainer."
+			endif
+		else
+			let l:job_options = {
+						\'out_cb': function('s:on_job_stdout'),
+						\'err_cb': function('s:on_job_stderr'),
+						\'exit_cb': function('s:on_job_exit')
+						\}
+			let s:cmake_command_job_id = job_start(a:command, l:job_options)
+			" TODO: Make sure job_id is valid
+			" DEBUG: echomsg 'job id ' . s:cmake_command_job_id
+		endif
 		" call s:run_command_exit is called on_job_exit
 	else
-		echomsg "Already running job."
+		if has('nvim')
+			echomsg 'Already running job ' . s:cmake_command_nvim_job_id
+		else
+			echomsg 'Already running job ' . s:cmake_command_job_id
+		endif
 	endif
 
 endfunction
