@@ -1,5 +1,5 @@
-
-" TODO: Add bear support, use a global variable
+" TODO: Add output option to bear to perhaps place compile_command in build
+" preset output path instead of project path
 " TODO: Add window height, use a global variable
 " TODO: Find Cmake projects, perhaps list available projects
 " TODO: Add set project, target, preset
@@ -151,10 +151,15 @@ endfunction
 function! s:prepare_command(cwd, project_dir, command) abort
 	let l:command = ''
 	if a:project_dir != a:cwd
-		silent echomsg "Prepending Project Dir to Command CMakePreset.."
+		silent echomsg "Prepending Project Dir to Command.."
 		let l:command = 'cd ' . a:project_dir . ' && '
 	endif
-	let l:command = l:command . a:command
+	if executable('bear') && g:cmake_bear_intercept == 1
+		silent echomsg "Adding Bear Intercept to Command.."
+		let l:command = l:command . 'bear -- ' . a:command
+	else
+		let l:command = l:command . a:command
+	endif
 	return l:command
 endfunction
 
@@ -290,6 +295,16 @@ function! s:run_command(command) abort
 		call s:run_system_command(a:command)
 	endif
 
+endfunction
+
+function! cmake#init() abort
+	silent echomsg "Initializing CMake Plugin.."
+	if exists('g:cmake_bear_intercept') && g:cmake_bear_intercept
+		if !executable('bear')
+			silent echomsg "Disabling g:cmake_bear_intercept .."
+			let g:cmake_bear_intercept = 0
+		endif
+	endif
 endfunction
 
 function! cmake#close_command_log_window() abort

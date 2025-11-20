@@ -5,19 +5,22 @@ endif
 let g:loaded_cmake = 1
 
 if !executable('cmake')
-	echo "Cannot find cmake.."
+	echomsg "Cannot find cmake.."
 	finish
 endif
 
 if !executable('ctest')
-	echo "Cannot find ctest.."
+	echomsg "Cannot find ctest.."
 	finish
 endif
 
 if !executable('bear')
-	echo "Cannot find bear"
-	"finish
+	echomsg "Cannot find bear.."
+	"finish NOTE: Optional
 endif
+
+" Initializing Plugin
+silent call cmake#init()
 
 " Window Commands
 command! -nargs=0 CMakeCloseCommandLogWindow call cmake#close_command_log_window()

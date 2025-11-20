@@ -39,7 +39,7 @@ require("lazy").setup({
 * Supports CMake presets
 * Supports CTest & GoogleTest presets
 * Supports CMake Workflow presets
-* (Coming soon) Supports [Bear](https://github.com/rizsotto/Bear) if available
+* Supports [Bear](https://github.com/rizsotto/Bear) if available
 * (Coming soon) Supports Ease integration with LSP and DAP
 * (Coming soon) Supports Switching presets or workflow presets
 * (Coming soon) Supports Command Log Window customization
