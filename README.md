@@ -46,13 +46,48 @@ require("lazy").setup({
 
 ## Useful links
 
+* [YouTube Tutorial](https://youtu.be/THgvJIJIHV4)
 * [CMake Examples](https://github.com/ericnantel/cmake_examples)
 
 ## Known issues
 
 
 ## Commands and Global Variables
-Please read the documentation (coming soon) for an exaustive list of available commands and global variables.
+Available Commands:
+* CMakeListPresets()
+* CMakeListPresetVariables(preset)
+* CMakePreset(preset)
+* CMakeFreshPreset(preset)
+* CMakeBuildPreset(preset)
+* CMakeTestPreset(preset)
+* CMakeWorkflowListPresets()
+* CMakeWorkflowPreset(preset)
+* CMakeWorkflowFreshPreset(preset)
+* CMakeCloseCommandLogWindow()
+
+For example, in Vim:
+```vim
+nnoremap <F5> <cmd>CMakeListPresets<CR>
+nnoremap <F6> <cmd>CMakeFreshPreset default<CR>
+nnoremap <F7> <cmd>CMakeBuildPreset default<CR>
+nnoremap <F8> <cmd>CMakeWorkflowFreshPreset default<CR>
+```
+For example, in Neovim:
+```lua
+vim.keymap.set("n", "<F5>", "<cmd>CMakeListPresets<CR>", { desc = "CMake List Presets" })
+vim.keymap.set("n", "<F6>", "<cmd>CMakeFreshPreset default<CR>", { desc = "CMake Fresh Preset 'default'" })
+vim.keymap.set("n", "<F7>", "<cmd>CMakeBuildPreset default<CR>", { desc = "CMake Build Preset 'default'" })
+vim.keymap.set("n", "<F8>", "<cmd>CMakeWorkflowFreshPreset default<CR>", { desc = "CMake Workflow Fresh Preset 'default'" })
+```
+
+Available Global Variables:
+* g:cmake_bear_intercept (disabled by default)
+
+For example, in Vim you can enable bear intercept (if installed):
+```vim
+let g:cmake_bear_intercept = 1
+```
+
 
 ## Thank you
 You made it this far ! Thank you !
