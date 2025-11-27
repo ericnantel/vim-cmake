@@ -5,17 +5,17 @@ endif
 let g:loaded_cmake = 1
 
 if !executable('cmake')
-	echomsg "Cannot find cmake.."
+	"echomsg "Cannot find cmake.."
 	finish
 endif
 
 if !executable('ctest')
-	echomsg "Cannot find ctest.."
+	"echomsg "Cannot find ctest.."
 	finish
 endif
 
 if !executable('bear')
-	echomsg "Cannot find bear.."
+	"echomsg "Cannot find bear.."
 	"finish NOTE: Optional
 endif
 
